@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grade-One Love Hub | Learning Portal 💝</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bubblegum+Sans&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Dugang nga style para sa Tabs */
+        .tab-btn { flex: 1; padding: 10px; border: none; cursor: pointer; font-family: 'Bubblegum Sans'; font-size: 14px; transition: 0.3s; background: #eee; color: #666; }
+        .tab-btn.active { background: var(--p-pink) !important; color: white !important; }
+        .tab-btn:first-child { border-radius: 15px 0 0 15px; }
+        .tab-btn:last-child { border-radius: 0 15px 15px 0; }
+        .panel { display: none; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div class="modal-overlay" id="student-modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3 style="font-family:'Bubblegum Sans'; color:var(--purp);"><i class="fas fa-tools"></i> Hub Manager</h3>
+            <button onclick="closeStudentModal()" style="border:none; background:none; color:var(--red); cursor:pointer;"><i class="fas fa-times-circle fa-lg"></i></button>
+        </div>
+
+        <div style="display: flex; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 16px; overflow: hidden;">
+            <button id="tab-st" class="tab-btn active" onclick="switchTab('students')">STUDENTS</button>
+            <button id="tab-tc" class="tab-btn" onclick="switchTab('teachers')">TEACHERS</button>
+        </div>
+
+        <div id="panel-students" class="panel" style="display: block;">
+            <button onclick="adminAction(() => resetLeaderboard())" style="width:100%; padding:10px; background:var(--red); color:white; border:none; border-radius:12px; font-weight:bold; margin-bottom:15px; font-size: 11px;">
+                <i class="fas fa-sync"></i> RESET ALL STARS
+            </button>
+            <div class="modal-input-group">
+                <input type="text" id="new-student-name" class="modal-input" placeholder="New student name...">
+                <button class="btn-add" onclick="addNewStudent()">ADD</button>
+            </div>
+            <div class="student-list-container" id="modal-list" style="max-height: 250px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="panel-teachers" class="panel">
+            <div style="background: var(--s-pink); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px dashed var(--p-pink);">
+                <input type="text" id="nt-name" class="modal-input" placeholder="Teacher Name" style="margin-bottom:8px;">
+                <input type="password" id="nt-pass" class="modal-input" placeholder="Password" style="margin-bottom:8px;">
+                <input type="number" id="nt-days" class="modal-input" placeholder="Access Days (e.g. 30)" style="margin-bottom:10px;">
+                <button onclick="addNewTeacher()" style="width:100%; background:var(--purp); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold;">+ ADD TEACHER</button>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #fff5f7; border-radius: 20px; border: 2px solid var(--p-pink);">
+    <h4 style="font-family: 'Bubblegum Sans'; color: var(--purp); margin-bottom: 10px;">🔐 CHANGE MASTER PASSWORD</h4>
+    <input type="password" id="admin-new-pass" placeholder="New Master Password" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px;">
+    <button onclick="changeMasterPassword()" style="width: 100%; background: var(--purp); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">Update Password</button>
+</div>
+            <div id="teacher-modal-list" style="max-height: 200px; overflow-y: auto;">
+                </div>
+        </div>
+    </div>
+</div>
+
+<div id="loader">
+    <i class="fas fa-heart fa-3x" style="color:var(--p-pink); animation: beat 1s infinite;"></i>
+    <p style="margin-top:15px; font-family:'Bubblegum Sans'; color:var(--p-pink);">Hulat lang, Pretty... ✨</p>
+</div>
+
+<div id="automation-layer"></div>
+
+<div class="paper">
+    <div class="announcement-bar">
+        <h3 style="font-family: 'Bubblegum Sans'; display: flex; align-items: center; gap: 10px; padding: 5px 15px;">
+            <i class="fas fa-bullhorn"></i> NOTICE: 
+            <button onclick="speakText(document.getElementById('announcement-text').innerText)" style="border:none; background:none; color:var(--p-pink); cursor:pointer;"><i class="fas fa-volume-up"></i></button>
+        </h3>
+        <p id="announcement-text" style="padding: 0 15px 10px 15px;">Welcome to Grade-One Love Hub! ✨</p>
+        <button onclick="editAnnouncement()" style="position:absolute; top:8px; right:8px; font-size:8px; opacity:0.5; border:none; background:none; cursor:pointer;">Edit</button>
+    </div>
+
+    <header>
+        <div class="adviser-block">
+            <div class="photo-frame" id="p-view"><i class="fas fa-user-tie fa-2x" style="color:var(--s-pink);"></i></div>
+            <div id="teacher-display-name" style="font-family: 'Bubblegum Sans'; color: var(--purp); font-size: 0.9rem;">...</div>
+            
+            <div style="font-size: 10px; font-weight: bold;"><span class="status-dot status-online"></span> LIVE</div>
+            <div class="admin-controls" id="admin-btns" style="display:none; gap:5px; justify-content:center; margin-top:5px;">
+                <button onclick="adminAction(() => document.getElementById('p-file').click())" style="font-size:8px; background:var(--p-pink); color:white; border:none; padding:4px 8px; border-radius:10px; cursor:pointer;">Photo</button>
+                <button onclick="manageStudents()" style="font-size:8px; background:var(--purp); color:white; border:none; padding:4px 8px; border-radius:10px; cursor:pointer;">Manage</button>
+            </div>
+            <input type="file" id="p-file" hidden onchange="uploadTeacherPhoto(this)">
+        </div>
+        
+        <h1 style="font-family: 'Dancing Script'; color: var(--p-pink); text-align: center; flex: 2; font-size: clamp(1.5rem, 5vw, 2.5rem);">Welcome To Grade-One-Love Hub! 💝</h1>
+        
+        <div class="student-card">
+            👤 <select id="student-name-select" onchange="handleNameSelect(this.value)"><option value="">Pili sang Ngalan</option></select>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <button class="menu-btn" onclick="openSubject('Homework')"><span>🏠 HOMEWORK</span> <i class="fas fa-star" style="color:var(--gold)"></i></button>
+            <button class="menu-btn" onclick="toggleM('reading')"><span>📚 READING</span> <i class="fas fa-chevron-down"></i></button>
+            <ul id="reading" class="submenu">
+                <li onclick="openSubject('English Reading')">🎀 English Reading</li>
+                <li onclick="openSubject('Filipino Reading')">🎀 Filipino Reading</li>
+                <li onclick="openSubject('Hiligaynon Reading')">🎀 Hiligaynon Reading</li>
+            </ul>
+            <button class="menu-btn" onclick="toggleM('worksheets')"><span>✏️ WORKSHEETS</span> <i class="fas fa-chevron-down"></i></button>
+            <ul id="worksheets" class="submenu">
+                <li onclick="openSubject('Math Worksheet')">🍭 MATH</li>
+                <li onclick="openSubject('Reading & Lit Worksheet')">🍭 READING & LIT</li>
+                <li onclick="openSubject('Language Worksheet')">🍭 LANGUAGE</li>
+                <li onclick="openSubject('Makabansa Worksheet')">🍭 MAKABANSA</li>
+                <li onclick="openSubject('GMRC Worksheet')">🍭 GMRC</li>
+            </ul>
+
+            <div style="margin-top:20px; padding:15px; background: #e8f5e9; border-radius:20px; border: 2px solid #2ecc71;">
+                <h4 style="font-family:'Bubblegum Sans'; font-size:12px; color:#2e7d32; text-align:center; margin-bottom:10px;">🟢 ACTIVE SUBONG</h4>
+                <div id="online-list"></div>
+            </div>
+
+            <div style="margin-top:20px; padding:15px; background:var(--s-pink); border-radius:20px;">
+                <h4 style="font-family:'Bubblegum Sans'; font-size:12px; color:var(--purp); text-align:center; margin-bottom:10px;">👑 STAR DASHBOARD</h4>
+                <div id="leaderboard-list"></div>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--s-pink); margin:20px 0;">
+            <div style="padding:10px;">
+                <button onclick="resetDeviceLock()" style="width:100%; background:var(--red); color:white; border:none; padding:12px; border-radius:15px; cursor:pointer; font-size:11px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-sign-out-alt"></i> LOGOUT HUB
+                </button>
+            </div>
+        </aside>
+
+        <main id="display-panel">
+            <div id="welcome-view" style="text-align: center; padding-top: 80px;">
+                <i class="fas fa-wand-magic-sparkles fa-4x" style="color: var(--p-pink); animation: float 3s ease-in-out infinite;"></i>
+                <h2 id="welcome-msg" style="font-family: 'Bubblegum Sans'; color: var(--p-pink); margin-top:20px; font-size: 2.2rem; line-height: 1.2;">
+                    HELLO MY CUTE STUDENTS!
+                </h2>
+                <h3 style="font-family: 'Dancing Script'; color: var(--purp); font-size: 1.8rem; margin-top: 5px;">
+                    WELCOME TO OUR HUB ✨
+                </h3>
+            </div>
+
+            <div id="subject-view" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--s-pink); padding-bottom:10px;">
+                    <h2 id="subj-title" style="font-family: 'Dancing Script'; color: var(--p-pink); font-size: 1.8rem;"></h2>
+                    <button onclick="closeSubject()" style="border:none; background:none; color:var(--red); cursor:pointer;"><i class="fas fa-times-circle fa-2x"></i></button>
+                </div>
+                <div style="text-align:center; padding:20px;">
+                    <button id="add-material-btn" onclick="adminAction(() => document.getElementById('file-up').click())" style="background:var(--p-pink); color:white; border:none; padding:12px 30px; border-radius:50px; cursor:pointer; display:none;">+ DUGANG NGA MATERIAL</button>
+                    <input type="file" id="file-up" hidden onchange="saveFile(this)">
+                </div>
+                <div class="file-grid" id="file-grid-container"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

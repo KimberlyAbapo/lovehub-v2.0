@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Hub | Login Portal 💝</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Bubblegum+Sans&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-wrapper { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #e0f7fa 0%, #fff5f7 100%); }
+        .login-card { background: white; padding: 40px; border-radius: 40px; border: 5px dashed var(--p-pink); width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(255,133,162,0.2); }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid var(--s-pink); border-radius: 20px; text-align: center; font-family: 'Quicksand'; font-weight: bold; font-size: 1rem; color: var(--purp); }
+        .login-btn { background: var(--p-pink); color: white; border: none; padding: 15px 40px; border-radius: 25px; cursor: pointer; font-family: 'Bubblegum Sans'; font-size: 1.2rem; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .login-btn:hover { transform: scale(1.05); background: var(--purp); }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <i class="fas fa-heart fa-3x" style="color:var(--p-pink); margin-bottom: 20px;"></i>
+            <h1 style="font-family: 'Dancing Script'; color: var(--p-pink); font-size: 2.5rem;">Love Hub!</h1>
+            <p style="color: #888; font-size: 0.9rem;">Teacher's Login Portal</p>
+            
+            <input type="text" id="t-entry" class="login-input" placeholder="NAME">
+            <input type="password" id="t-pass" class="login-input" placeholder="PASSWORD">
+            <button onclick="portalEnter()" class="login-btn">SULOD SA HUB ✨</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://etxxmreaabhjkfsafmlb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eHhtcmVhYWJoamtmc2FmbWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NTkyNTUsImV4cCI6MjA4NTQzNTI1NX0.VoIX2GvFsVnS327mNLWDE3cfT79THe0YRSJNAtnlxH4';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        if(localStorage.getItem('active_teacher')) window.location.href = 'index.html';
+
+        async function portalEnter() {
+            const n = document.getElementById('t-entry').value.trim().toUpperCase();
+            const p = document.getElementById('t-pass').value;
+
+            if(!n || !p) return alert("Isulod ang credentials! 🎀");
+
+            const { data, error } = await _supabase
+                .from('teachers')
+                .select('*')
+                .eq('name', n)
+                .eq('password', p)
+                .single();
+
+            if (error || !data) {
+                alert("Sayop ang Ngalan o Password! ❌");
+                return;
+            }
+
+            if (!data.is_active) {
+                alert("Inactive ang imong account. Kontaka ang Admin.");
+                return;
+            }
+
+            // Check Expiry (Kung na-add na nimo ang column)
+            if (data.expiry_date) {
+                const karon = new Date();
+                const exp = new Date(data.expiry_date);
+                if (karon > exp) {
+                    alert("Expired na ang imong access! 🚩");
+                    return;
+                }
+            }
+
+            localStorage.setItem('active_teacher', data.name);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
